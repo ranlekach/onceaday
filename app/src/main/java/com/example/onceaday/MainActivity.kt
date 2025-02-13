@@ -102,7 +102,9 @@ fun OnceADayApp() {
 fun TaskListView(tasks: MutableList<String>, completedTasks: MutableList<String>, taskToDelete: String?, onLongPress: (String) -> Unit, onRemoveTask: (String) -> Unit) {
     LazyColumn {
         items(tasks) { task ->
-            TaskRow(task, completedTasks.contains(task), taskToDelete == task, onLongPress, onRemoveTask)
+            TaskRow(task, completedTasks.contains(task), taskToDelete == task, onLongPress, onRemoveTask, onToggleComplete = {
+                if (completedTasks.contains(task)) completedTasks.remove(task) else completedTasks.add(task)
+            })
         }
     }
 }
@@ -119,14 +121,21 @@ fun TaskTileView(tasks: MutableList<String>, completedTasks: MutableList<String>
 }
 
 @Composable
-fun TaskRow(task: String, isCompleted: Boolean, showDelete: Boolean, onLongPress: (String) -> Unit, onRemoveTask: (String) -> Unit) {
+fun TaskRow(task: String, isCompleted: Boolean, showDelete: Boolean, onLongPress: (String) -> Unit, onRemoveTask: (String) -> Unit, onToggleComplete: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(8.dp).pointerInput(Unit) {
             detectTapGestures(onLongPress = { onLongPress(task) })
         },
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(task, textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None)
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+            Checkbox(
+                checked = isCompleted,
+                onCheckedChange = { onToggleComplete() }
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(task, textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None)
+        }
         if (showDelete) {
             IconButton(onClick = { onRemoveTask(task) }) {
                 Icon(Icons.Filled.Close, contentDescription = "Delete")
