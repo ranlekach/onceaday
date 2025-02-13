@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Close
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -143,11 +144,18 @@ fun TaskTile(task: String, isCompleted: Boolean, showDelete: Boolean, onLongPres
         backgroundColor = if (isCompleted) Color.Gray else MaterialTheme.colors.surface,
         shape = RoundedCornerShape(8.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
-            Text(task, textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None)
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.align(Alignment.Center).padding(16.dp)) {
+                Text(task, textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None)
+            }
             if (showDelete) {
-                IconButton(onClick = { onRemoveTask(task) }) {
-                    Icon(Icons.Filled.Close, contentDescription = "Delete")
+                Box(modifier = Modifier.align(Alignment.TopEnd).padding(4.dp)) {
+                    IconButton(
+                        onClick = { onRemoveTask(task) },
+                        modifier = Modifier.size(24.dp).clip(CircleShape).background(Color.White)
+                    ) {
+                        Icon(Icons.Filled.Close, contentDescription = "Delete", tint = Color.Black)
+                    }
                 }
             }
         }
