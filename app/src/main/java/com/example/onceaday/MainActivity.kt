@@ -3,10 +3,12 @@ package com.example.onceaday
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -20,9 +22,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.input.pointer.pointerInput
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +42,7 @@ fun OnceADayApp() {
     val completedTasks = remember { mutableStateListOf<String>() }
     var showAddTaskBubble by remember { mutableStateOf(false) }
     var newTask by remember { mutableStateOf(TextFieldValue("")) }
+    var taskToDelete by remember { mutableStateOf<String?>(null) }
 
     Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Column {
@@ -49,9 +52,9 @@ fun OnceADayApp() {
             }
             Spacer(modifier = Modifier.height(16.dp))
             if (isListView) {
-                TaskListView(tasks, completedTasks, onRemoveTask = { tasks.remove(it) })
+                TaskListView(tasks, completedTasks, taskToDelete, { taskToDelete = it }, { tasks.remove(it); taskToDelete = null })
             } else {
-                TaskTileView(tasks, completedTasks, onRemoveTask = { tasks.remove(it) })
+                TaskTileView(tasks, completedTasks, taskToDelete, { taskToDelete = it }, { tasks.remove(it); taskToDelete = null })
             }
         }
 
@@ -91,58 +94,56 @@ fun OnceADayApp() {
 }
 
 @Composable
-fun TaskListView(tasks: MutableList<String>, completedTasks: MutableList<String>, onRemoveTask: (String) -> Unit) {
+fun TaskListView(tasks: MutableList<String>, completedTasks: MutableList<String>, taskToDelete: String?, onLongPress: (String) -> Unit, onRemoveTask: (String) -> Unit) {
     LazyColumn {
         items(tasks) { task ->
-            TaskRow(task, completedTasks.contains(task), onCheckedChange = {
-                if (completedTasks.contains(task)) completedTasks.remove(task)
-                else completedTasks.add(task)
-            }, onRemoveTask = { onRemoveTask(task) })
+            TaskRow(task, completedTasks.contains(task), taskToDelete == task, onLongPress, onRemoveTask)
         }
     }
 }
 
 @Composable
-fun TaskTileView(tasks: MutableList<String>, completedTasks: MutableList<String>, onRemoveTask: (String) -> Unit) {
+fun TaskTileView(tasks: MutableList<String>, completedTasks: MutableList<String>, taskToDelete: String?, onLongPress: (String) -> Unit, onRemoveTask: (String) -> Unit) {
     val sortedTasks = tasks.sortedBy { completedTasks.contains(it) }.toList()
     LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize()) {
         items(sortedTasks.size) { index ->
             val task = sortedTasks[index]
-            TaskTile(task, completedTasks.contains(task), onCheckedChange = {
-                if (completedTasks.contains(task)) completedTasks.remove(task)
-                else completedTasks.add(task)
-            }, onRemoveTask = { onRemoveTask(task) })
+            TaskTile(task, completedTasks.contains(task), taskToDelete == task, onLongPress, onRemoveTask)
         }
     }
 }
 
 @Composable
-fun TaskRow(task: String, isCompleted: Boolean, onCheckedChange: () -> Unit, onRemoveTask: () -> Unit) {
-    Row(modifier = Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+fun TaskRow(task: String, isCompleted: Boolean, showDelete: Boolean, onLongPress: (String) -> Unit, onRemoveTask: (String) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(8.dp).pointerInput(Unit) {
+            detectTapGestures(onLongPress = { onLongPress(task) })
+        },
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
         Text(task, textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None)
-        Row {
-            Checkbox(checked = isCompleted, onCheckedChange = { onCheckedChange() })
-            IconButton(onClick = { onRemoveTask() }) {
-                Icon(Icons.Filled.Delete, contentDescription = "Delete")
+        if (showDelete) {
+            IconButton(onClick = { onRemoveTask(task) }) {
+                Icon(Icons.Filled.Close, contentDescription = "Delete")
             }
         }
     }
 }
 
 @Composable
-fun TaskTile(task: String, isCompleted: Boolean, onCheckedChange: () -> Unit, onRemoveTask: () -> Unit) {
+fun TaskTile(task: String, isCompleted: Boolean, showDelete: Boolean, onLongPress: (String) -> Unit, onRemoveTask: (String) -> Unit) {
     Card(
-        modifier = Modifier.size(150.dp).padding(8.dp),
+        modifier = Modifier.size(150.dp).padding(8.dp).pointerInput(Unit) {
+            detectTapGestures(onLongPress = { onLongPress(task) })
+        },
         backgroundColor = if (isCompleted) Color.Gray else MaterialTheme.colors.surface,
         shape = RoundedCornerShape(8.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
             Text(task, textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None)
-            Spacer(modifier = Modifier.height(8.dp))
-            Row {
-                Checkbox(checked = isCompleted, onCheckedChange = { onCheckedChange() })
-                IconButton(onClick = { onRemoveTask() }) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Delete")
+            if (showDelete) {
+                IconButton(onClick = { onRemoveTask(task) }) {
+                    Icon(Icons.Filled.Close, contentDescription = "Delete")
                 }
             }
         }
