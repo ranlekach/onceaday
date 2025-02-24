@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.example.onceaday.storage.TaskStorage
+import com.example.onceaday.ui.TaskListView
+import com.example.onceaday.ui.TaskTileView
 import kotlinx.coroutines.launch
 
 @Composable
@@ -27,7 +29,7 @@ fun OnceADayApp(context: Context) {
     val coroutineScope = rememberCoroutineScope()
 
     // Load tasks and completed tasks from DataStore when app starts
-    LaunchedEffect(Unit) {
+    LaunchedEffect(context) {
         TaskStorage.getTasks(context).collect { savedTasks ->
             tasks.clear()
             tasks.addAll(savedTasks)
@@ -40,12 +42,14 @@ fun OnceADayApp(context: Context) {
 
     // Function to toggle task completion
     fun toggleTaskCompletion(task: String) {
-        if (completedTasks.contains(task)) {
-            completedTasks.remove(task)
-        } else {
-            completedTasks.add(task)
+        coroutineScope.launch {
+            if (completedTasks.contains(task)) {
+                completedTasks.remove(task)
+            } else {
+                completedTasks.add(task)
+            }
+            TaskStorage.saveCompletedTasks(context, completedTasks.toList())
         }
-        coroutineScope.launch { TaskStorage.saveCompletedTasks(context, completedTasks) }
     }
 
     Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
