@@ -1,3 +1,21 @@
+// MainActivity.kt
+package com.example.onceaday
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import com.example.onceaday.ui.OnceADayApp
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            OnceADayApp()
+        }
+    }
+}
+/*
+
 package com.example.onceaday
 
 import androidx.compose.material.icons.Icons
@@ -115,7 +133,9 @@ fun TaskTileView(tasks: MutableList<String>, completedTasks: MutableList<String>
     LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize()) {
         items(sortedTasks.size) { index ->
             val task = sortedTasks[index]
-            TaskTile(task, completedTasks.contains(task), taskToDelete == task, onLongPress, onRemoveTask)
+            TaskTile(task, completedTasks.contains(task), taskToDelete == task, onLongPress, onRemoveTask, onToggleComplete = {
+                if (completedTasks.contains(task)) completedTasks.remove(task) else completedTasks.add(task)
+            })
         }
     }
 }
@@ -124,7 +144,9 @@ fun TaskTileView(tasks: MutableList<String>, completedTasks: MutableList<String>
 fun TaskRow(task: String, isCompleted: Boolean, showDelete: Boolean, onLongPress: (String) -> Unit, onRemoveTask: (String) -> Unit, onToggleComplete: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(8.dp).pointerInput(Unit) {
-            detectTapGestures(onLongPress = { onLongPress(task) })
+            detectTapGestures(
+                onLongPress = { onLongPress(task) }
+            )
         },
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -145,10 +167,13 @@ fun TaskRow(task: String, isCompleted: Boolean, showDelete: Boolean, onLongPress
 }
 
 @Composable
-fun TaskTile(task: String, isCompleted: Boolean, showDelete: Boolean, onLongPress: (String) -> Unit, onRemoveTask: (String) -> Unit) {
+fun TaskTile(task: String, isCompleted: Boolean, showDelete: Boolean, onLongPress: (String) -> Unit, onRemoveTask: (String) -> Unit, onToggleComplete: (String) -> Unit) {
     Card(
         modifier = Modifier.size(150.dp).padding(8.dp).pointerInput(Unit) {
-            detectTapGestures(onLongPress = { onLongPress(task) })
+            detectTapGestures(
+                onTap = { onToggleComplete(task) },
+                onLongPress = { onLongPress(task) }
+            )
         },
         backgroundColor = if (isCompleted) Color.Gray else MaterialTheme.colors.surface,
         shape = RoundedCornerShape(8.dp)
@@ -170,3 +195,4 @@ fun TaskTile(task: String, isCompleted: Boolean, showDelete: Boolean, onLongPres
         }
     }
 }
+*/
