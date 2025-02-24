@@ -1,4 +1,3 @@
-// MainActivity.kt
 package com.example.onceaday
 
 import android.os.Bundle
@@ -10,10 +9,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            OnceADayApp()
+            OnceADayApp(context = this) // Pass context here
         }
     }
 }
+
 /*
 
 package com.example.onceaday

@@ -17,7 +17,7 @@ fun TaskRow(
     showDelete: Boolean,
     onLongPress: (String) -> Unit,
     onRemoveTask: (String) -> Unit,
-    onToggleComplete: () -> Unit
+    onToggleComplete: (String) -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(8.dp),
@@ -26,7 +26,7 @@ fun TaskRow(
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
             Checkbox(
                 checked = isCompleted,
-                onCheckedChange = { onToggleComplete() }
+                onCheckedChange = { onToggleComplete(task) }
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(task, textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None)
