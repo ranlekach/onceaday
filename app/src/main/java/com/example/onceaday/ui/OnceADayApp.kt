@@ -53,10 +53,9 @@ fun OnceADayApp(context: Context) {
             TaskStorage.saveCompletedTasks(context, completedTasks.toList())
 
             // Sort tasks so completed ones move to the bottom
-            tasks.sortBy { completedTasks.contains(it) }
+            tasks.sortWith(compareBy({ completedTasks.contains(it) }, { it }))
         }
     }
-
     Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
         detectTapGestures(onTap = { taskToDelete = null })
     }.padding(16.dp)) {

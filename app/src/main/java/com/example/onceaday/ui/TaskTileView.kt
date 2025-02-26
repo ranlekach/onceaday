@@ -17,7 +17,7 @@ fun TaskTileView(
 ) {
     val sortedTasks = tasks.sortedBy { completedTasks.contains(it) }.toList()
     LazyVerticalGrid(columns = GridCells.Fixed(2)) {
-        items(sortedTasks) { task ->
+        items(sortedTasks, key = { it }) { task ->
             TaskTile(
                 task,
                 completedTasks.contains(task),
