@@ -19,6 +19,7 @@ import com.example.onceaday.ui.TaskTileView
 import com.google.accompanist.navigation.material.ModalBottomSheetLayout
 //import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
 import kotlinx.coroutines.launch
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun OnceADayApp(context: Context) {
@@ -68,26 +69,46 @@ fun OnceADayApp(context: Context) {
         taskToDelete = null
     }
 
+    var showWarning by remember { mutableStateOf(false) }
+
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         sheetContent = {
             Column(modifier = Modifier.padding(16.dp)) {
-                TextField(
-                    value = newTask,
-                    onValueChange = { newTask = it },
-                    placeholder = { Text("Enter task") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = {
-                    if (newTask.isNotBlank()) {
-                        tasks.add(newTask)
-                        newTask = ""
-                        coroutineScope.launch { bottomSheetState.hide() }
-                        coroutineScope.launch { TaskStorage.saveTasks(context, tasks) }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextField(
+                        value = newTask,
+                        onValueChange = {
+                            newTask = it
+                            showWarning = false
+                        },
+                        placeholder = { Text("Enter task") },
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            if (newTask.isNotBlank()) {
+                                if (tasks.contains(newTask)) {
+                                    showWarning = true
+                                } else {
+                                    tasks.add(newTask)
+                                    newTask = ""
+                                    coroutineScope.launch { bottomSheetState.hide() }
+                                    coroutineScope.launch { TaskStorage.saveTasks(context, tasks) }
+                                }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF03DAC6))
+                    ) {
+                        Text("Add")
                     }
-                }) {
-                    Text("Add")
+                }
+                if (showWarning) {
+                    Text("Task already exists", color = Color.Red)
                 }
             }
         }
