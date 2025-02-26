@@ -13,13 +13,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-
 import com.example.onceaday.storage.TaskStorage
 import com.example.onceaday.ui.TaskListView
 import com.example.onceaday.ui.TaskTileView
+import com.google.accompanist.navigation.material.ModalBottomSheetLayout
+//import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
 import kotlinx.coroutines.launch
 
-// OnceADayApp.kt
 @Composable
 fun OnceADayApp(context: Context) {
     var isListView by remember { mutableStateOf(true) }
@@ -29,6 +29,7 @@ fun OnceADayApp(context: Context) {
     var newTask by remember { mutableStateOf("") }
     var taskToDelete by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
+    val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
 
     // Load tasks and completed tasks from DataStore when app starts
     LaunchedEffect(Unit) {
@@ -67,64 +68,63 @@ fun OnceADayApp(context: Context) {
         taskToDelete = null
     }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .pointerInput(Unit) {
-            detectTapGestures(onTap = { cancelDeleteMode() })
-        }
-        .padding(16.dp)) {
-        Column {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Once-A-Day", style = MaterialTheme.typography.h5)
-                Switch(checked = isListView, onCheckedChange = { isListView = it })
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            if (isListView) {
-                TaskListView(tasks, completedTasks, taskToDelete, ::handleLongPress, {
-                    tasks.remove(it)
-                    taskToDelete = null
-                    coroutineScope.launch { TaskStorage.saveTasks(context, tasks) }
-                }, ::toggleTaskCompletion, ::cancelDeleteMode)
-            } else {
-                TaskTileView(tasks, completedTasks, taskToDelete, ::handleLongPress, {
-                    tasks.remove(it)
-                    taskToDelete = null
-                    coroutineScope.launch { TaskStorage.saveTasks(context, tasks) }
-                }, ::toggleTaskCompletion, ::cancelDeleteMode)
-            }
-        }
-        if (showAddTaskBubble) {
-            Card(
-                modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
-                shape = RoundedCornerShape(12.dp),
-                elevation = 8.dp
-            ) {
-                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    TextField(
-                        value = newTask,
-                        onValueChange = { newTask = it },
-                        placeholder = { Text("Enter task") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = {
-                        if (newTask.isNotBlank()) {
-                            tasks.add(newTask)
-                            newTask = ""
-                            showAddTaskBubble = false
-                            coroutineScope.launch { TaskStorage.saveTasks(context, tasks) }
-                        }
-                    }) {
-                        Text("Add")
+    ModalBottomSheetLayout(
+        sheetState = bottomSheetState,
+        sheetContent = {
+            Column(modifier = Modifier.padding(16.dp)) {
+                TextField(
+                    value = newTask,
+                    onValueChange = { newTask = it },
+                    placeholder = { Text("Enter task") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = {
+                    if (newTask.isNotBlank()) {
+                        tasks.add(newTask)
+                        newTask = ""
+                        coroutineScope.launch { bottomSheetState.hide() }
+                        coroutineScope.launch { TaskStorage.saveTasks(context, tasks) }
                     }
+                }) {
+                    Text("Add")
                 }
             }
         }
-        FloatingActionButton(
-            onClick = { showAddTaskBubble = !showAddTaskBubble },
-            modifier = Modifier.align(Alignment.BottomStart).padding(16.dp)
-        ) {
-            Icon(Icons.Filled.Add, contentDescription = "Add Task")
+    ) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = { cancelDeleteMode() })
+            }
+            .padding(16.dp)) {
+            Column {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Once-A-Day", style = MaterialTheme.typography.h5)
+
+                    Switch(checked = isListView, onCheckedChange = { isListView = it })
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                if (isListView) {
+                    TaskListView(tasks, completedTasks, taskToDelete, ::handleLongPress, {
+                        tasks.remove(it)
+                        taskToDelete = null
+                        coroutineScope.launch { TaskStorage.saveTasks(context, tasks) }
+                    }, ::toggleTaskCompletion, ::cancelDeleteMode)
+                } else {
+                    TaskTileView(tasks, completedTasks, taskToDelete, ::handleLongPress, {
+                        tasks.remove(it)
+                        taskToDelete = null
+                        coroutineScope.launch { TaskStorage.saveTasks(context, tasks) }
+                    }, ::toggleTaskCompletion, ::cancelDeleteMode)
+                }
+            }
+            FloatingActionButton(
+                onClick = { coroutineScope.launch { bottomSheetState.show() } },
+                modifier = Modifier.align(Alignment.BottomStart).padding(16.dp)
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = "Add Task")
+            }
         }
     }
 }
