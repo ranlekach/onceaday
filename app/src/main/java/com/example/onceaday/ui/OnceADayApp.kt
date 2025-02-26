@@ -21,7 +21,19 @@ import com.google.accompanist.navigation.material.ModalBottomSheetLayout
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
 import android.util.Log
+import androidx.compose.runtime.livedata.observeAsState
 import kotlinx.coroutines.flow.first
+
+//import androidx.compose.material3.Button
+//import androidx.compose.material3.Text
+//import androidx.compose.runtime.*
+//import androidx.compose.ui.Modifier
+//import androidx.compose.ui.unit.dp
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import com.example.onceaday.worker.ResetTasksWorker
+import androidx.work.ExistingWorkPolicy
 
 @Composable
 fun OnceADayApp(context: Context) {
@@ -51,6 +63,27 @@ fun OnceADayApp(context: Context) {
 
             // Sort tasks so completed ones move to the bottom
             tasks.sortWith(compareBy({ completedTasks.contains(it) }, { it }))
+        }
+    }
+
+    // Observe WorkManager for worker completion
+    val workManager = WorkManager.getInstance(context)
+    val workInfo by workManager.getWorkInfosForUniqueWorkLiveData("resetTasksWorker").observeAsState()
+
+    LaunchedEffect(workInfo) {
+        workInfo?.let { infoList ->
+            val workInfo = infoList.firstOrNull()
+            if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
+                Log.d(TAG, "Worker completed successfully")
+                coroutineScope.launch {
+                    val savedCompletedTasks = TaskStorage.getCompletedTasks(context).first()
+                    completedTasks.clear()
+                    completedTasks.addAll(savedCompletedTasks)
+
+                    // Sort tasks so completed ones move to the bottom
+                    tasks.sortWith(compareBy({ completedTasks.contains(it) }, { it }))
+                }
+            }
         }
     }
 
@@ -151,6 +184,9 @@ fun OnceADayApp(context: Context) {
                         coroutineScope.launch { TaskStorage.saveTasks(context, tasks) }
                     }, ::toggleTaskCompletion, ::cancelDeleteMode)
                 }
+                Button(onClick = { triggerResetTasksWorker(context) }) {
+                    Text(text = "Trigger Worker")
+                }
             }
             FloatingActionButton(
                 onClick = { coroutineScope.launch { bottomSheetState.show() } },
@@ -160,4 +196,13 @@ fun OnceADayApp(context: Context) {
             }
         }
     }
+}
+
+private fun triggerResetTasksWorker(context: Context) {
+    val workRequest = OneTimeWorkRequestBuilder<ResetTasksWorker>().build()
+    WorkManager.getInstance(context).enqueueUniqueWork(
+        "resetTasksWorker",
+        ExistingWorkPolicy.REPLACE,
+        workRequest
+    )
 }

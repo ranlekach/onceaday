@@ -44,6 +44,12 @@ object TaskStorage {
         }
     }
 
+    suspend fun resetTaskCompletionStatus(context: Context) {
+        Log.d(TAG, "resetTaskCompletionStatus called")
+        context.dataStore.edit { preferences ->
+            preferences[COMPLETED_TASKS_KEY] = ""
+        }
+    }
     suspend fun clearDataStore(context: Context) {
         Log.d(TAG, "clearDataStore called")
         context.dataStore.edit { preferences ->
