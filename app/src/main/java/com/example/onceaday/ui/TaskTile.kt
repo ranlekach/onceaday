@@ -24,7 +24,8 @@ fun TaskTile(
     showDelete: Boolean,
     onLongPress: (String) -> Unit,
     onRemoveTask: (String) -> Unit,
-    onToggleComplete: (String) -> Unit
+    onToggleComplete: (String) -> Unit,
+    onCancelDeleteMode: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -32,7 +33,7 @@ fun TaskTile(
             .padding(8.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onTap = { onToggleComplete(task) },
+                    onTap = { if (showDelete) onCancelDeleteMode() else onToggleComplete(task) },
                     onLongPress = { onLongPress(task) }
                 )
             },

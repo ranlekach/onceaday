@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 
+// TaskListView.kt
 @Composable
 fun TaskListView(
     tasks: MutableList<String>,
@@ -12,7 +13,8 @@ fun TaskListView(
     taskToDelete: String?,
     onLongPress: (String) -> Unit,
     onRemoveTask: (String) -> Unit,
-    onToggleComplete: (String) -> Unit
+    onToggleComplete: (String) -> Unit,
+    onCancelDeleteMode: () -> Unit
 ) {
     LazyColumn {
         items(tasks) { task ->
@@ -22,7 +24,8 @@ fun TaskListView(
                 taskToDelete == task,
                 onLongPress,
                 onRemoveTask,
-                onToggleComplete
+                onToggleComplete,
+                onCancelDeleteMode
             )
         }
     }

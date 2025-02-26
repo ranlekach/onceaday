@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 
+// TaskTileView.kt
 @Composable
 fun TaskTileView(
     tasks: MutableList<String>,
@@ -13,7 +14,8 @@ fun TaskTileView(
     taskToDelete: String?,
     onLongPress: (String) -> Unit,
     onRemoveTask: (String) -> Unit,
-    onToggleComplete: (String) -> Unit
+    onToggleComplete: (String) -> Unit,
+    onCancelDeleteMode: () -> Unit
 ) {
     val sortedTasks = tasks.sortedBy { completedTasks.contains(it) }.toList()
     LazyVerticalGrid(columns = GridCells.Fixed(2)) {
@@ -24,7 +26,8 @@ fun TaskTileView(
                 taskToDelete == task,
                 onLongPress,
                 onRemoveTask,
-                onToggleComplete
+                onToggleComplete,
+                onCancelDeleteMode
             )
         }
     }
