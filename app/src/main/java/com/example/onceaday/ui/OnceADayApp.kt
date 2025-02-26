@@ -20,38 +20,50 @@ import com.google.accompanist.navigation.material.ModalBottomSheetLayout
 //import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
+import android.util.Log
+import kotlinx.coroutines.flow.first
 
 @Composable
 fun OnceADayApp(context: Context) {
+    val TAG = "OnceADayApp"
     var isListView by remember { mutableStateOf(true) }
     val tasks = remember { mutableStateListOf<String>() }
     val completedTasks = remember { mutableStateListOf<String>() }
     var showAddTaskBubble by remember { mutableStateOf(false) }
     var newTask by remember { mutableStateOf("") }
     var taskToDelete by remember { mutableStateOf<String?>(null) }
+    var showWarning by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
 
     // Load tasks and completed tasks from DataStore when app starts
     LaunchedEffect(Unit) {
-        TaskStorage.getTasks(context).collect { savedTasks ->
+        Log.d(TAG, "LaunchedEffect started")
+        coroutineScope.launch {
+            val savedTasks = TaskStorage.getTasks(context).first()
+            val savedCompletedTasks = TaskStorage.getCompletedTasks(context).first()
+            Log.d(TAG, "Tasks loaded: $savedTasks")
+            Log.d(TAG, "Completed tasks loaded: $savedCompletedTasks")
             tasks.clear()
             tasks.addAll(savedTasks)
-        }
-        TaskStorage.getCompletedTasks(context).collect { savedCompletedTasks ->
             completedTasks.clear()
             completedTasks.addAll(savedCompletedTasks)
+
+            // Sort tasks so completed ones move to the bottom
+            tasks.sortWith(compareBy({ completedTasks.contains(it) }, { it }))
         }
     }
 
     // Function to toggle task completion
     fun toggleTaskCompletion(task: String) {
         coroutineScope.launch {
+            Log.d(TAG, "toggleTaskCompletion called with task: $task")
             if (completedTasks.contains(task)) {
                 completedTasks.remove(task)
             } else {
                 completedTasks.add(task)
             }
+            Log.d(TAG, "calling saveCompletedTasks with task: $completedTasks")
             TaskStorage.saveCompletedTasks(context, completedTasks.toList())
 
             // Sort tasks so completed ones move to the bottom
@@ -61,15 +73,15 @@ fun OnceADayApp(context: Context) {
 
     // Function to handle long press
     fun handleLongPress(task: String) {
+        Log.d(TAG, "handleLongPress called with task: $task")
         taskToDelete = task
     }
 
     // Function to cancel delete mode
     fun cancelDeleteMode() {
+        Log.d(TAG, "cancelDeleteMode called")
         taskToDelete = null
     }
-
-    var showWarning by remember { mutableStateOf(false) }
 
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
