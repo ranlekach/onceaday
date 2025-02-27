@@ -9,6 +9,7 @@ lifecycleRuntimeKtx = "2.6.1"
 activityCompose = "1.8.0"
 composeBom = "2024.04.01"
 runtimeLivedata = "1.7.8"
+gson = "2.10.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -35,7 +36,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version = "1.0.0" }
 accompanist-material = { module = "com.google.accompanist:accompanist-navigation-material", version = "0.31.2-alpha" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
-
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
