@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -47,6 +48,13 @@ fun TaskRow(
             IconButton(onClick = { onRemoveTask(task) }) {
                 Icon(Icons.Filled.Close, contentDescription = "Delete")
             }
+        }
+        if (task.hasTimer) {
+            Icon(
+                imageVector = Icons.Filled.AccessTime,
+                contentDescription = "Timer Set",
+                modifier = Modifier.size(24.dp).padding(start = 8.dp)
+            )
         }
     }
 }

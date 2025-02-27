@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -54,6 +55,16 @@ fun TaskTile(
                         Icon(Icons.Filled.Close, contentDescription = "Delete", tint = Color.Black)
                     }
                 }
+            }
+            if (task.hasTimer) {
+                Icon(
+                    imageVector = Icons.Filled.AccessTime,
+                    contentDescription = "Timer Set",
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(4.dp)
+                        .size(24.dp) // Explicitly specify the type as Dp
+                )
             }
         }
     }
