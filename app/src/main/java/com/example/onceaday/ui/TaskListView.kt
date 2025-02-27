@@ -9,8 +9,8 @@ import com.example.onceaday.model.Task
 @Composable
 fun TaskListView(
     tasks: MutableList<Task>,
-    completedTasks: MutableList<String>,
-    taskToDelete: String?,
+    completedTasks: MutableList<Task>,
+    taskToDelete: Task?,
     onLongPress: (Task) -> Unit,
     onRemoveTask: (Task) -> Unit,
     onToggleComplete: (Task) -> Unit,
@@ -20,8 +20,8 @@ fun TaskListView(
         items(tasks) { task ->
             TaskRow(
                 task,
-                completedTasks.contains(task.description),
-                taskToDelete == task.description,
+                completedTasks.contains(task),
+                taskToDelete == task,
                 onLongPress,
                 onRemoveTask,
                 onToggleComplete,
