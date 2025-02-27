@@ -1,7 +1,7 @@
-// OnceADayApp.kt
 package com.example.onceaday.ui
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,23 +17,16 @@ import com.example.onceaday.storage.TaskStorage
 import com.example.onceaday.ui.TaskListView
 import com.example.onceaday.ui.TaskTileView
 import com.google.accompanist.navigation.material.ModalBottomSheetLayout
-//import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Color
-import android.util.Log
 import androidx.compose.runtime.livedata.observeAsState
 import kotlinx.coroutines.flow.first
-
-//import androidx.compose.material3.Button
-//import androidx.compose.material3.Text
-//import androidx.compose.runtime.*
-//import androidx.compose.ui.Modifier
-//import androidx.compose.ui.unit.dp
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.example.onceaday.worker.ResetTasksWorker
 import androidx.work.ExistingWorkPolicy
+import com.example.onceaday.notifications.NotificationHelper
 
 @Composable
 fun OnceADayApp(context: Context) {
@@ -93,8 +86,20 @@ fun OnceADayApp(context: Context) {
             Log.d(TAG, "toggleTaskCompletion called with task: $task")
             if (completedTasks.contains(task)) {
                 completedTasks.remove(task)
+                NotificationHelper.showNotification(
+                    context,
+                    "Task Incomplete",
+                    "Task '$task' marked as incomplete",
+                    task.hashCode()
+                )
             } else {
                 completedTasks.add(task)
+                NotificationHelper.showNotification(
+                    context,
+                    "Task Complete",
+                    "Task '$task' marked as complete",
+                    task.hashCode()
+                )
             }
             Log.d(TAG, "calling saveCompletedTasks with task: $completedTasks")
             TaskStorage.saveCompletedTasks(context, completedTasks.toList())
@@ -144,6 +149,12 @@ fun OnceADayApp(context: Context) {
                                     newTask = ""
                                     coroutineScope.launch { bottomSheetState.hide() }
                                     coroutineScope.launch { TaskStorage.saveTasks(context, tasks) }
+                                    NotificationHelper.showNotification(
+                                        context,
+                                        "New Task Added",
+                                        "Task '$newTask' added",
+                                        newTask.hashCode()
+                                    )
                                 }
                             }
                         },
