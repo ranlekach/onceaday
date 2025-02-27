@@ -33,6 +33,7 @@ import java.util.Calendar
 import android.app.TimePickerDialog
 import androidx.compose.ui.platform.LocalContext
 import com.example.onceaday.model.Task
+import  com.example.onceaday.notifications.scheduleTaskNotification
 
 @Composable
 fun OnceADayApp(context: Context) {
@@ -184,6 +185,10 @@ fun OnceADayApp(context: Context) {
                                         "Task '${task.description}' added",
                                         task.description.hashCode()
                                     )
+                                    // Schedule the notification if the task has a timer
+                                    if (task.hasTimer && task.timer != null) {
+                                        scheduleTaskNotification(context, task.description, task.timer)
+                                    }
                                 }
                             }
                         },

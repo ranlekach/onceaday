@@ -9,7 +9,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.example.onceaday.R
 
 object NotificationHelper {
-    private const val CHANNEL_ID = "task_notifications"
+    private const val CHANNEL_ID = "task_channel"
     private const val CHANNEL_NAME = "Task Notifications"
     private const val CHANNEL_DESCRIPTION = "Notifications for task reminders"
 
@@ -22,6 +22,7 @@ object NotificationHelper {
             ).apply {
                 description = CHANNEL_DESCRIPTION
             }
+
             val notificationManager: NotificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
