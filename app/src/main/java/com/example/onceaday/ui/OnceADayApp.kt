@@ -32,13 +32,13 @@ import androidx.compose.ui.res.vectorResource
 import java.util.Calendar
 import android.app.TimePickerDialog
 import androidx.compose.ui.platform.LocalContext
-
+import com.example.onceaday.model.Task
 
 @Composable
 fun OnceADayApp(context: Context) {
     val TAG = "OnceADayApp"
     var isListView by remember { mutableStateOf(true) }
-    val tasks = remember { mutableStateListOf<String>() }
+    val tasks = remember { mutableStateListOf<Task>() }
     val completedTasks = remember { mutableStateListOf<String>() }
     var showAddTaskBubble by remember { mutableStateOf(false) }
     var newTask by remember { mutableStateOf("") }
@@ -51,7 +51,7 @@ fun OnceADayApp(context: Context) {
     LaunchedEffect(Unit) {
         Log.d(TAG, "LaunchedEffect started")
         coroutineScope.launch {
-            val savedTasks = TaskStorage.getTasks(context).first()
+            val savedTasks = TaskStorage.getTasks(context).first().map { Task(it) }
             val savedCompletedTasks = TaskStorage.getCompletedTasks(context).first()
             Log.d(TAG, "Tasks loaded: $savedTasks")
             Log.d(TAG, "Completed tasks loaded: $savedCompletedTasks")
@@ -61,7 +61,7 @@ fun OnceADayApp(context: Context) {
             completedTasks.addAll(savedCompletedTasks)
 
             // Sort tasks so completed ones move to the bottom
-            tasks.sortWith(compareBy({ completedTasks.contains(it) }, { it }))
+            tasks.sortWith(compareBy({ completedTasks.contains(it.description) }, { it.description }))
         }
     }
 
@@ -80,45 +80,45 @@ fun OnceADayApp(context: Context) {
                     completedTasks.addAll(savedCompletedTasks)
 
                     // Sort tasks so completed ones move to the bottom
-                    tasks.sortWith(compareBy({ completedTasks.contains(it) }, { it }))
+                    tasks.sortWith(compareBy({ completedTasks.contains(it.description) }, { it.description }))
                 }
             }
         }
     }
 
     // Function to toggle task completion
-    fun toggleTaskCompletion(task: String) {
+    fun toggleTaskCompletion(task: Task) {
         coroutineScope.launch {
-            Log.d(TAG, "toggleTaskCompletion called with task: $task")
-            if (completedTasks.contains(task)) {
-                completedTasks.remove(task)
+            Log.d(TAG, "toggleTaskCompletion called with task: ${task.description}")
+            if (completedTasks.contains(task.description)) {
+                completedTasks.remove(task.description)
                 NotificationHelper.showNotification(
                     context,
                     "Task Incomplete",
-                    "Task '$task' marked as incomplete",
-                    task.hashCode()
+                    "Task '${task.description}' marked as incomplete",
+                    task.description.hashCode()
                 )
             } else {
-                completedTasks.add(task)
+                completedTasks.add(task.description)
                 NotificationHelper.showNotification(
                     context,
                     "Task Complete",
-                    "Task '$task' marked as complete",
-                    task.hashCode()
+                    "Task '${task.description}' marked as complete",
+                    task.description.hashCode()
                 )
             }
             Log.d(TAG, "calling saveCompletedTasks with task: $completedTasks")
             TaskStorage.saveCompletedTasks(context, completedTasks.toList())
 
             // Sort tasks so completed ones move to the bottom
-            tasks.sortWith(compareBy({ completedTasks.contains(it) }, { it }))
+            tasks.sortWith(compareBy({ completedTasks.contains(it.description) }, { it.description }))
         }
     }
 
     // Function to handle long press
-    fun handleLongPress(task: String) {
-        Log.d(TAG, "handleLongPress called with task: $task")
-        taskToDelete = task
+    fun handleLongPress(task: Task) {
+        Log.d("OnceADayApp", "handleLongPress called with task: ${task.description}")
+        taskToDelete = task.description
     }
 
     // Function to cancel delete mode
@@ -165,18 +165,24 @@ fun OnceADayApp(context: Context) {
                     Button(
                         onClick = {
                             if (newTask.isNotBlank()) {
-                                if (tasks.contains(newTask)) {
+                                if (tasks.any { it.description == newTask }) {
                                     showWarning = true
                                 } else {
-                                    tasks.add(newTask)
+                                    val task = Task(
+                                        description = newTask,
+                                        hasTimer = selectedTime != null,
+                                        timer = selectedTime?.timeInMillis
+                                    )
+                                    tasks.add(task)
                                     newTask = ""
+                                    selectedTime = null
                                     coroutineScope.launch { bottomSheetState.hide() }
-                                    coroutineScope.launch { TaskStorage.saveTasks(context, tasks) }
+                                    coroutineScope.launch { TaskStorage.saveTasks(context, tasks.map { it.description }) }
                                     NotificationHelper.showNotification(
                                         context,
                                         "New Task Added",
-                                        "Task '$newTask' added",
-                                        newTask.hashCode()
+                                        "Task '${task.description}' added",
+                                        task.description.hashCode()
                                     )
                                 }
                             }
@@ -209,16 +215,16 @@ fun OnceADayApp(context: Context) {
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 if (isListView) {
-                    TaskListView(tasks, completedTasks, taskToDelete, ::handleLongPress, {
-                        tasks.remove(it)
+                    TaskListView(tasks, completedTasks, taskToDelete, ::handleLongPress, { task: Task ->
+                        tasks.remove(task)
                         taskToDelete = null
-                        coroutineScope.launch { TaskStorage.saveTasks(context, tasks) }
+                        coroutineScope.launch { TaskStorage.saveTasks(context, tasks.map { it.description }) }
                     }, ::toggleTaskCompletion, ::cancelDeleteMode)
                 } else {
-                    TaskTileView(tasks, completedTasks, taskToDelete, ::handleLongPress, {
-                        tasks.remove(it)
+                    TaskTileView(tasks, completedTasks, taskToDelete, ::handleLongPress, { task: Task ->
+                        tasks.remove(task)
                         taskToDelete = null
-                        coroutineScope.launch { TaskStorage.saveTasks(context, tasks) }
+                        coroutineScope.launch { TaskStorage.saveTasks(context, tasks.map { it.description }) }
                     }, ::toggleTaskCompletion, ::cancelDeleteMode)
                 }
                 Button(onClick = { triggerResetTasksWorker(context) }) {
@@ -234,7 +240,6 @@ fun OnceADayApp(context: Context) {
         }
     }
 }
-
 private fun triggerResetTasksWorker(context: Context) {
     val workRequest = OneTimeWorkRequestBuilder<ResetTasksWorker>().build()
     WorkManager.getInstance(context).enqueueUniqueWork(

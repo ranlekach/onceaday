@@ -4,24 +4,24 @@ package com.example.onceaday.ui
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import com.example.onceaday.model.Task
 
-// TaskListView.kt
 @Composable
 fun TaskListView(
-    tasks: MutableList<String>,
+    tasks: MutableList<Task>,
     completedTasks: MutableList<String>,
     taskToDelete: String?,
-    onLongPress: (String) -> Unit,
-    onRemoveTask: (String) -> Unit,
-    onToggleComplete: (String) -> Unit,
+    onLongPress: (Task) -> Unit,
+    onRemoveTask: (Task) -> Unit,
+    onToggleComplete: (Task) -> Unit,
     onCancelDeleteMode: () -> Unit
 ) {
     LazyColumn {
         items(tasks) { task ->
             TaskRow(
                 task,
-                completedTasks.contains(task),
-                taskToDelete == task,
+                completedTasks.contains(task.description),
+                taskToDelete == task.description,
                 onLongPress,
                 onRemoveTask,
                 onToggleComplete,

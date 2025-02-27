@@ -16,20 +16,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import com.example.onceaday.model.Task
 
 @Composable
 fun TaskTile(
-    task: String,
+    task: Task,
     isCompleted: Boolean,
     showDelete: Boolean,
-    onLongPress: (String) -> Unit,
-    onRemoveTask: (String) -> Unit,
-    onToggleComplete: (String) -> Unit,
+    onLongPress: (Task) -> Unit,
+    onRemoveTask: (Task) -> Unit,
+    onToggleComplete: (Task) -> Unit,
     onCancelDeleteMode: () -> Unit
 ) {
     Card(
         modifier = Modifier
-            .size(150.dp)
+            .size(150.dp) // Explicitly specify the type as Dp
             .padding(8.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
@@ -42,13 +43,13 @@ fun TaskTile(
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.align(Alignment.Center).padding(16.dp)) {
-                Text(task, textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None)
+                Text(task.description, textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None)
             }
             if (showDelete) {
                 Box(modifier = Modifier.align(Alignment.TopEnd).padding(4.dp)) {
                     IconButton(
                         onClick = { onRemoveTask(task) },
-                        modifier = Modifier.size(24.dp).background(Color.White, shape = CircleShape)
+                        modifier = Modifier.size(24.dp).background(Color.White, shape = CircleShape) // Explicitly specify the type as Dp
                     ) {
                         Icon(Icons.Filled.Close, contentDescription = "Delete", tint = Color.Black)
                     }

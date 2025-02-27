@@ -11,16 +11,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import com.example.onceaday.model.Task
 
-// TaskRow.kt
 @Composable
 fun TaskRow(
-    task: String,
+    task: Task,
     isCompleted: Boolean,
     showDelete: Boolean,
-    onLongPress: (String) -> Unit,
-    onRemoveTask: (String) -> Unit,
-    onToggleComplete: (String) -> Unit,
+    onLongPress: (Task) -> Unit,
+    onRemoveTask: (Task) -> Unit,
+    onToggleComplete: (Task) -> Unit,
     onCancelDeleteMode: () -> Unit
 ) {
     Row(
@@ -41,7 +41,7 @@ fun TaskRow(
                 onCheckedChange = { onToggleComplete(task) }
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(task, textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None)
+            Text(task.description, textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None)
         }
         if (showDelete) {
             IconButton(onClick = { onRemoveTask(task) }) {
