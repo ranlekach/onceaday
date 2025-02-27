@@ -27,6 +27,12 @@ import androidx.work.WorkManager
 import com.example.onceaday.worker.ResetTasksWorker
 import androidx.work.ExistingWorkPolicy
 import com.example.onceaday.notifications.NotificationHelper
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.ui.res.vectorResource
+import java.util.Calendar
+import android.app.TimePickerDialog
+import androidx.compose.ui.platform.LocalContext
+
 
 @Composable
 fun OnceADayApp(context: Context) {
@@ -121,6 +127,20 @@ fun OnceADayApp(context: Context) {
         taskToDelete = null
     }
 
+    var selectedTime by remember { mutableStateOf<Calendar?>(null) }
+    val timePickerDialog = TimePickerDialog(
+        LocalContext.current,
+        { _, hourOfDay, minute ->
+            selectedTime = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, hourOfDay)
+                set(Calendar.MINUTE, minute)
+            }
+        },
+        Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
+        Calendar.getInstance().get(Calendar.MINUTE),
+        true
+    )
+
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         sheetContent = {
@@ -138,6 +158,9 @@ fun OnceADayApp(context: Context) {
                         placeholder = { Text("Enter task") },
                         modifier = Modifier.weight(1f)
                     )
+                    IconButton(onClick = { timePickerDialog.show() }) {
+                        Icon(Icons.Filled.AccessTime, contentDescription = "Select Time")
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
@@ -165,6 +188,9 @@ fun OnceADayApp(context: Context) {
                 }
                 if (showWarning) {
                     Text("Task already exists", color = Color.Red)
+                }
+                selectedTime?.let {
+                    Text("Notification Time: ${it.get(Calendar.HOUR_OF_DAY)}:${it.get(Calendar.MINUTE)}")
                 }
             }
         }
