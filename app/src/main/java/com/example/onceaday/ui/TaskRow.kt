@@ -18,7 +18,7 @@ import com.example.onceaday.model.Task
 fun TaskRow(
     task: Task,
     isCompleted: Boolean,
-    showDelete: Boolean,
+    isInDeletionMode: Boolean,
     onLongPress: (Task) -> Unit,
     onRemoveTask: (Task) -> Unit,
     onToggleComplete: (Task) -> Unit,
@@ -30,7 +30,7 @@ fun TaskRow(
             .padding(8.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onTap = { onCancelDeleteMode() },
+                    onTap = { if (!isInDeletionMode) onCancelDeleteMode() else onToggleComplete(task) },
                     onLongPress = { onLongPress(task) }
                 )
             },
@@ -44,7 +44,7 @@ fun TaskRow(
             Spacer(modifier = Modifier.width(8.dp))
             Text(task.description, textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None)
         }
-        if (showDelete) {
+        if (isInDeletionMode) {
             IconButton(onClick = { onRemoveTask(task) }) {
                 Icon(Icons.Filled.Close, contentDescription = "Delete")
             }

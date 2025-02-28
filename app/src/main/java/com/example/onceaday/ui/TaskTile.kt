@@ -23,7 +23,7 @@ import com.example.onceaday.model.Task
 fun TaskTile(
     task: Task,
     isCompleted: Boolean,
-    showDelete: Boolean,
+    isInDeletionMode: Boolean,
     onLongPress: (Task) -> Unit,
     onRemoveTask: (Task) -> Unit,
     onToggleComplete: (Task) -> Unit,
@@ -31,11 +31,11 @@ fun TaskTile(
 ) {
     Card(
         modifier = Modifier
-            .size(150.dp) // Explicitly specify the type as Dp
+            .size(150.dp)
             .padding(8.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onTap = { if (showDelete) onCancelDeleteMode() else onToggleComplete(task) },
+                    onTap = { if (!isInDeletionMode) onCancelDeleteMode() else onToggleComplete(task) },
                     onLongPress = { onLongPress(task) }
                 )
             },
@@ -46,11 +46,11 @@ fun TaskTile(
             Column(modifier = Modifier.align(Alignment.Center).padding(16.dp)) {
                 Text(task.description, textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None)
             }
-            if (showDelete) {
+            if (isInDeletionMode) {
                 Box(modifier = Modifier.align(Alignment.TopEnd).padding(4.dp)) {
                     IconButton(
                         onClick = { onRemoveTask(task) },
-                        modifier = Modifier.size(24.dp).background(Color.White, shape = CircleShape) // Explicitly specify the type as Dp
+                        modifier = Modifier.size(24.dp).background(Color.White, shape = CircleShape)
                     ) {
                         Icon(Icons.Filled.Close, contentDescription = "Delete", tint = Color.Black)
                     }
@@ -63,7 +63,7 @@ fun TaskTile(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(4.dp)
-                        .size(24.dp) // Explicitly specify the type as Dp
+                        .size(24.dp)
                 )
             }
         }

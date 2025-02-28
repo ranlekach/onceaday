@@ -11,7 +11,7 @@ import com.example.onceaday.model.Task
 fun TaskTileView(
     tasks: MutableList<Task>,
     completedTasks: MutableList<Task>,
-    taskToDelete: Task?,
+    isInDeletionMode: Boolean,
     onLongPress: (Task) -> Unit,
     onRemoveTask: (Task) -> Unit,
     onToggleComplete: (Task) -> Unit,
@@ -23,7 +23,7 @@ fun TaskTileView(
             TaskTile(
                 task,
                 completedTasks.contains(task),
-                taskToDelete == task,
+                isInDeletionMode,
                 onLongPress,
                 onRemoveTask,
                 onToggleComplete,

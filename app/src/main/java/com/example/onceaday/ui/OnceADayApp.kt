@@ -115,17 +115,18 @@ fun OnceADayApp(context: Context) {
             tasks.sortWith(compareBy({ completedTasks.contains(it) }, { it.description }))
         }
     }
+    var isInDeletionMode by remember { mutableStateOf(false) }
 
     // Function to handle long press
     fun handleLongPress(task: Task) {
         Log.d("OnceADayApp", "handleLongPress called with task: ${task.description}")
-        taskToDelete = task
+        isInDeletionMode = true
     }
 
     // Function to cancel delete mode
     fun cancelDeleteMode() {
         Log.d(TAG, "cancelDeleteMode called")
-        taskToDelete = null
+        isInDeletionMode = false
     }
 
     var selectedTime by remember { mutableStateOf<Calendar?>(null) }
@@ -215,21 +216,18 @@ fun OnceADayApp(context: Context) {
             Column {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("Once-A-Day", style = MaterialTheme.typography.h5)
-
                     Switch(checked = isListView, onCheckedChange = { isListView = it })
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 if (isListView) {
-                    TaskListView(tasks, completedTasks, taskToDelete, ::handleLongPress, { task: Task ->
+                    TaskListView(tasks, completedTasks, isInDeletionMode, ::handleLongPress, { task: Task ->
                         tasks.remove(task)
-                        taskToDelete = null
-                        coroutineScope.launch { TaskStorage.saveTasks(context, tasks.toList()) }
+                        coroutineScope.launch { TaskStorage.saveTasks(context, tasks) }
                     }, ::toggleTaskCompletion, ::cancelDeleteMode)
                 } else {
-                    TaskTileView(tasks, completedTasks, taskToDelete, ::handleLongPress, { task: Task ->
+                    TaskTileView(tasks, completedTasks, isInDeletionMode, ::handleLongPress, { task: Task ->
                         tasks.remove(task)
-                        taskToDelete = null
-                        coroutineScope.launch { TaskStorage.saveTasks(context, tasks.toList()) }
+                        coroutineScope.launch  { TaskStorage.saveTasks(context, tasks) }
                     }, ::toggleTaskCompletion, ::cancelDeleteMode)
                 }
                 Button(onClick = { triggerResetTasksWorker(context) }) {
